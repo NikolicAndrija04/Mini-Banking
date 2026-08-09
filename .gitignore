@@ -1,0 +1,35 @@
+# Build output
+target/
+**/target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local.yml
+*.local.yaml
+
+# Logs and runtime data
+*.log
+logs/
+data/
+
+# Temporary and generated QA files
+tmp/
+docs/rendered/
+docs/.cache/
+
+# Test reports
+allure-results/
