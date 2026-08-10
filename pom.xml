@@ -28,6 +28,7 @@
         <module>services/transaction-service</module>
         <module>services/card-service</module>
         <module>services/notification-service</module>
+        <module>services/overview-service</module>
     </modules>
 
     <properties>
