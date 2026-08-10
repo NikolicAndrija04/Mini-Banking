@@ -1,0 +1,8 @@
+minibanking:
+  platform:
+    runtime-profile: docker-compose
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

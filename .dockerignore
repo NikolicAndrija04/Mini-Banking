@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.agents
+.codex
+**/target
+**/*.log
+*.iml
+.env
+.env.*
+docs/rendered
+tmp

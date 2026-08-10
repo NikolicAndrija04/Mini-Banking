@@ -1,0 +1,224 @@
+name: minibanking
+
+x-java-environment: &java-environment
+  EUREKA_URL: http://discovery-server:8761/eureka/
+  CONFIG_SERVER_URL: http://config-server:8888
+  ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+  SPRING_PROFILES_ACTIVE: docker
+  JAVA_TOOL_OPTIONS: -XX:InitialRAMPercentage=20.0 -XX:MaxRAMPercentage=70.0
+
+x-rabbit-environment: &rabbit-environment
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: minibanking
+  RABBITMQ_PASSWORD: minibanking-secret
+
+services:
+  zipkin:
+    image: openzipkin/zipkin:3
+    ports:
+      - "9411:9411"
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: minibanking
+      RABBITMQ_DEFAULT_PASS: minibanking-secret
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_HOSTNAME: http://localhost:9090
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./deploy/keycloak/minibanking-realm.json:/opt/keycloak/data/import/minibanking-realm.json:ro
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: infrastructure/discovery-server/Dockerfile
+    environment:
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      TRACING_SAMPLING_PROBABILITY: "1.0"
+      INSTANCE_ID: discovery-1
+    ports:
+      - "8761:8761"
+
+  config-server:
+    build:
+      context: .
+      dockerfile: infrastructure/config-server/Dockerfile
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      CONFIG_REPOSITORY_LOCATION: file:/config-repository
+      INSTANCE_ID: config-1
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repository:/config-repository:ro
+
+  customer-service:
+    build:
+      context: .
+      dockerfile: services/customer-service/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: customer-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+
+  account-service:
+    build:
+      context: .
+      dockerfile: services/account-service/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: account-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+
+  transaction-service:
+    build:
+      context: .
+      dockerfile: services/transaction-service/Dockerfile
+    environment:
+      <<: [*java-environment, *rabbit-environment]
+      INSTANCE_ID: transaction-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+
+  card-service:
+    build:
+      context: .
+      dockerfile: services/card-service/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: card-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      <<: [*java-environment, *rabbit-environment]
+      INSTANCE_ID: notification-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+
+  overview-service-1:
+    build:
+      context: .
+      dockerfile: services/overview-service/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: overview-1
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8086:8086"
+
+  overview-service-2:
+    build:
+      context: .
+      dockerfile: services/overview-service/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: overview-2
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8087:8086"
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/api-gateway/Dockerfile
+    environment:
+      <<: *java-environment
+      INSTANCE_ID: gateway-1
+      KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/minibanking
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/minibanking/protocol/openid-connect/certs
+    depends_on:
+      config-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:v3.13.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:12.4.4
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    depends_on:
+      prometheus:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deploy/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
