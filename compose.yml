@@ -6,7 +6,7 @@ x-java-environment: &java-environment
   ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
   TRACING_SAMPLING_PROBABILITY: "1.0"
   SPRING_PROFILES_ACTIVE: docker
-  JAVA_TOOL_OPTIONS: -XX:InitialRAMPercentage=20.0 -XX:MaxRAMPercentage=70.0
+  JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
 
 x-rabbit-environment: &rabbit-environment
   RABBITMQ_HOST: rabbitmq
@@ -17,6 +17,8 @@ x-rabbit-environment: &rabbit-environment
 services:
   zipkin:
     image: openzipkin/zipkin:3
+    environment:
+      JAVA_OPTS: -Xms64m -Xmx256m
     ports:
       - "9411:9411"
 
@@ -46,6 +48,7 @@ services:
       KC_HOSTNAME: http://localhost:9090
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
+      JAVA_OPTS_KC_HEAP: -Xms128m -Xmx384m
     ports:
       - "9090:8080"
     volumes:
@@ -59,6 +62,7 @@ services:
       ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
       TRACING_SAMPLING_PROBABILITY: "1.0"
       INSTANCE_ID: discovery-1
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
     ports:
       - "8761:8761"
 
@@ -71,6 +75,7 @@ services:
       ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
       CONFIG_REPOSITORY_LOCATION: file:/config-repository
       INSTANCE_ID: config-1
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -162,6 +167,7 @@ services:
       - "8086:8086"
 
   overview-service-2:
+    profiles: ["scale"]
     build:
       context: .
       dockerfile: services/overview-service/Dockerfile
@@ -192,6 +198,7 @@ services:
       - "8080:8080"
 
   prometheus:
+    profiles: ["observability"]
     image: prom/prometheus:v3.13.1
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -203,6 +210,7 @@ services:
       - prometheus-data:/prometheus
 
   grafana:
+    profiles: ["observability"]
     image: grafana/grafana:12.4.4
     environment:
       GF_SECURITY_ADMIN_USER: admin
