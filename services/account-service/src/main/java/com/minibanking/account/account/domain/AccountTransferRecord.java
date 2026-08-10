@@ -24,6 +24,12 @@ public class AccountTransferRecord {
     @Column(name = "destination_account_id", nullable = false)
     private UUID destinationAccountId;
 
+    @Column(name = "source_customer_id", nullable = false)
+    private UUID sourceCustomerId;
+
+    @Column(name = "destination_customer_id", nullable = false)
+    private UUID destinationCustomerId;
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
@@ -46,6 +52,8 @@ public class AccountTransferRecord {
             UUID transferId,
             UUID sourceAccountId,
             UUID destinationAccountId,
+            UUID sourceCustomerId,
+            UUID destinationCustomerId,
             BigDecimal amount,
             String currencyCode,
             BigDecimal sourceBalanceAfter,
@@ -54,6 +62,8 @@ public class AccountTransferRecord {
         this.transferId = transferId;
         this.sourceAccountId = sourceAccountId;
         this.destinationAccountId = destinationAccountId;
+        this.sourceCustomerId = sourceCustomerId;
+        this.destinationCustomerId = destinationCustomerId;
         this.amount = amount;
         this.currencyCode = currencyCode;
         this.sourceBalanceAfter = sourceBalanceAfter;
@@ -81,6 +91,14 @@ public class AccountTransferRecord {
 
     public UUID getDestinationAccountId() {
         return destinationAccountId;
+    }
+
+    public UUID getSourceCustomerId() {
+        return sourceCustomerId;
+    }
+
+    public UUID getDestinationCustomerId() {
+        return destinationCustomerId;
     }
 
     public BigDecimal getAmount() {

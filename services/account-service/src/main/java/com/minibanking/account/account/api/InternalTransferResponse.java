@@ -8,6 +8,8 @@ public record InternalTransferResponse(
         UUID transferId,
         UUID sourceAccountId,
         UUID destinationAccountId,
+        UUID sourceCustomerId,
+        UUID destinationCustomerId,
         BigDecimal amount,
         String currencyCode,
         BigDecimal sourceBalanceAfter,

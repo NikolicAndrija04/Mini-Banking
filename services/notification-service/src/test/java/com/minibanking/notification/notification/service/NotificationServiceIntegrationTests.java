@@ -5,9 +5,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.minibanking.events.TransferNotificationEvent;
 import com.minibanking.notification.common.error.ConflictException;
+import com.minibanking.notification.messaging.TransferNotificationConsumer;
 import com.minibanking.notification.common.error.ResourceNotFoundException;
 import com.minibanking.notification.notification.api.CreateNotificationRequest;
 import com.minibanking.notification.notification.api.NotificationResponse;
@@ -17,16 +21,27 @@ import com.minibanking.notification.notification.domain.NotificationType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Transactional
 @SpringBootTest(properties = {
         "spring.cloud.config.enabled=false",
-        "eureka.client.enabled=false"
+        "eureka.client.enabled=false",
+        "spring.rabbitmq.listener.simple.auto-startup=false"
 })
 class NotificationServiceIntegrationTests {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private TransferNotificationConsumer transferNotificationConsumer;
+
+    @MockitoBean
+    private SimpMessagingTemplate messagingTemplate;
 
     @Test
     void completesNotificationCrudLifecycle() {
@@ -57,6 +72,32 @@ class NotificationServiceIntegrationTests {
         assertThatThrownBy(() -> notificationService.create(request(eventId, customerId)))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("already exists");
+    }
+
+    @Test
+    void consumesRedeliveredRabbitEventExactlyOnceAndPushesOneWebSocketMessage() {
+        UUID eventId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        TransferNotificationEvent event = new TransferNotificationEvent(
+                eventId,
+                UUID.randomUUID(),
+                customerId,
+                "DESTINATION",
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                new java.math.BigDecimal("250.00"),
+                "RSD",
+                java.time.Instant.now()
+        );
+
+        transferNotificationConsumer.consume(event);
+        transferNotificationConsumer.consume(event);
+
+        assertThat(notificationService.findAll(customerId, null, null)).hasSize(1);
+        verify(messagingTemplate, times(1)).convertAndSend(
+                eq("/topic/notifications/" + customerId),
+                any(NotificationResponse.class)
+        );
     }
 
     private CreateNotificationRequest request(UUID eventId, UUID customerId) {

@@ -2,6 +2,7 @@ package com.minibanking.notification.notification.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -82,13 +83,14 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationResponse createIfEventIsNew(CreateNotificationRequest request) {
+    public Optional<NotificationResponse> createIfEventIsNew(CreateNotificationRequest request) {
         if (request.eventId() == null) {
             throw new IllegalArgumentException("An asynchronous notification must contain an event id");
         }
-        return notificationRepository.findByEventId(request.eventId())
-                .map(this::toResponse)
-                .orElseGet(() -> create(request));
+        if (notificationRepository.existsByEventId(request.eventId())) {
+            return Optional.empty();
+        }
+        return Optional.of(create(request));
     }
 
     private CustomerNotification requireNotification(UUID id) {

@@ -40,6 +40,12 @@ public class BankTransaction {
     @Column(name = "destination_account_id", nullable = false, updatable = false)
     private UUID destinationAccountId;
 
+    @Column(name = "source_customer_id")
+    private UUID sourceCustomerId;
+
+    @Column(name = "destination_customer_id")
+    private UUID destinationCustomerId;
+
     @Column(nullable = false, precision = 19, scale = 2, updatable = false)
     private BigDecimal amount;
 
@@ -112,11 +118,15 @@ public class BankTransaction {
     }
 
     public void complete(
+            UUID sourceCustomer,
+            UUID destinationCustomer,
             String currency,
             BigDecimal sourceBalance,
             BigDecimal destinationBalance,
             Instant accountCompletionTime
     ) {
+        sourceCustomerId = sourceCustomer;
+        destinationCustomerId = destinationCustomer;
         currencyCode = currency;
         sourceBalanceAfter = sourceBalance;
         destinationBalanceAfter = destinationBalance;
@@ -153,6 +163,14 @@ public class BankTransaction {
 
     public UUID getDestinationAccountId() {
         return destinationAccountId;
+    }
+
+    public UUID getSourceCustomerId() {
+        return sourceCustomerId;
+    }
+
+    public UUID getDestinationCustomerId() {
+        return destinationCustomerId;
     }
 
     public BigDecimal getAmount() {

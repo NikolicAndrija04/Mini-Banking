@@ -47,6 +47,8 @@ class TransactionServiceIntegrationTests {
                     request.transferId(),
                     request.sourceAccountId(),
                     request.destinationAccountId(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
                     request.amount(),
                     "RSD",
                     new BigDecimal("750.00"),

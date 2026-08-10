@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.minibanking.transaction.client.account.AccountClient;
 import com.minibanking.transaction.client.account.AccountTransferRequest;
@@ -18,16 +19,23 @@ import com.minibanking.transaction.transaction.api.UpdateTransactionRequest;
 import com.minibanking.transaction.transaction.domain.BankTransaction;
 import com.minibanking.transaction.transaction.domain.TransactionStatus;
 import com.minibanking.transaction.transaction.repository.BankTransactionRepository;
+import com.minibanking.transaction.messaging.TransferCompletedDomainEvent;
 
 @Service
 public class TransactionService {
 
     private final BankTransactionRepository transactionRepository;
     private final AccountClient accountClient;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public TransactionService(BankTransactionRepository transactionRepository, AccountClient accountClient) {
+    public TransactionService(
+            BankTransactionRepository transactionRepository,
+            AccountClient accountClient,
+            ApplicationEventPublisher eventPublisher
+    ) {
         this.transactionRepository = transactionRepository;
         this.accountClient = accountClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -107,11 +115,23 @@ public class TransactionService {
                     transaction.getAmount()
             ));
             transaction.complete(
+                    response.sourceCustomerId(),
+                    response.destinationCustomerId(),
                     response.currencyCode(),
                     response.sourceBalanceAfter(),
                     response.destinationBalanceAfter(),
                     response.completedAt()
             );
+            eventPublisher.publishEvent(new TransferCompletedDomainEvent(
+                    transaction.getId(),
+                    transaction.getSourceCustomerId(),
+                    transaction.getDestinationCustomerId(),
+                    transaction.getSourceAccountId(),
+                    transaction.getDestinationAccountId(),
+                    transaction.getAmount(),
+                    transaction.getCurrencyCode(),
+                    transaction.getCompletedAt()
+            ));
         } catch (RuntimeException exception) {
             transaction.fail(failureMessage(exception));
         }
