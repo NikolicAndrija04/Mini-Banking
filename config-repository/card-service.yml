@@ -1,0 +1,4 @@
+minibanking:
+  card:
+    max-daily-limit: 300000.00
+    validity-years: 4

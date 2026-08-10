@@ -1,0 +1,54 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: card-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  datasource:
+    url: jdbc:h2:mem:carddb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${INSTANCE_ID:${random.value}}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Issues and manages tokenized payment cards
+    version: '@project.version@'
+
+minibanking:
+  card:
+    max-daily-limit: 1000000.00
+    validity-years: 3
