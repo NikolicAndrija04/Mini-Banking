@@ -1,0 +1,3 @@
+minibanking:
+  transaction:
+    processing-mode: synchronous-with-idempotent-retry
