@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          metrics:
+            enabled: true
+          default-filters:
+            - AddResponseHeader=X-MiniBanking-Gateway, api-gateway
+          routes:
+            - id: customer-service
+              uri: lb://customer-service
+              predicates:
+                - Path=/api/customers/**
+            - id: account-service
+              uri: lb://account-service
+              predicates:
+                - Path=/api/accounts/**
+            - id: transaction-service
+              uri: lb://transaction-service
+              predicates:
+                - Path=/api/transactions/**
+            - id: card-service
+              uri: lb://card-service
+              predicates:
+                - Path=/api/cards/**
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**,/ws/**
+            - id: overview-service
+              uri: lb://overview-service
+              predicates:
+                - Path=/api/overview/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${INSTANCE_ID:${random.value}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      access: read-only
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Load-balanced entry point for MiniBanking APIs
+    version: '@project.version@'
