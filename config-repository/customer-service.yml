@@ -1,0 +1,5 @@
+minibanking:
+  platform:
+    configuration-source: config-server
+  customer:
+    welcome-message: Customer service is configured centrally through Spring Cloud Config
