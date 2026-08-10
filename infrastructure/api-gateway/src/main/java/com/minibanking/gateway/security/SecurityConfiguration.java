@@ -33,6 +33,7 @@ public class SecurityConfiguration {
                         .pathMatchers(
                                 "/actuator/health/**",
                                 "/actuator/info",
+                                "/actuator/prometheus",
                                 "/api/customers/welcome",
                                 "/api/overview/instance"
                         ).permitAll()

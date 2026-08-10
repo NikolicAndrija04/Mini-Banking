@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: minibanking-infrastructure
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - discovery-server:8761
+          - config-server:8888
+          - api-gateway:8080
+
+  - job_name: minibanking-business-services
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - customer-service:8081
+          - account-service:8082
+          - transaction-service:8083
+          - card-service:8084
+          - notification-service:8085
+          - overview-service-1:8086
+          - overview-service-2:8086

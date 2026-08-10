@@ -1,0 +1,9 @@
+management:
+  tracing:
+    sampling:
+      probability: 0.1
+
+spring:
+  h2:
+    console:
+      enabled: false

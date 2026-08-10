@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import com.minibanking.transaction.client.account.AccountClient;
 import com.minibanking.transaction.client.account.AccountTransferRequest;
 import com.minibanking.transaction.client.account.AccountTransferResponse;
@@ -27,15 +31,32 @@ public class TransactionService {
     private final BankTransactionRepository transactionRepository;
     private final AccountClient accountClient;
     private final ApplicationEventPublisher eventPublisher;
+    private final Counter completedAttempts;
+    private final Counter failedAttempts;
+    private final DistributionSummary transferAmounts;
 
     public TransactionService(
             BankTransactionRepository transactionRepository,
             AccountClient accountClient,
-            ApplicationEventPublisher eventPublisher
+            ApplicationEventPublisher eventPublisher,
+            MeterRegistry meterRegistry
     ) {
         this.transactionRepository = transactionRepository;
         this.accountClient = accountClient;
         this.eventPublisher = eventPublisher;
+        this.completedAttempts = Counter.builder("minibanking.transfer.attempts")
+                .description("Number of transfer processing attempts by outcome")
+                .tag("outcome", "completed")
+                .register(meterRegistry);
+        this.failedAttempts = Counter.builder("minibanking.transfer.attempts")
+                .description("Number of transfer processing attempts by outcome")
+                .tag("outcome", "failed")
+                .register(meterRegistry);
+        this.transferAmounts = DistributionSummary.builder("minibanking.transfer.amount")
+                .description("Amounts of successfully completed transfers")
+                .baseUnit("currency-units")
+                .publishPercentileHistogram()
+                .register(meterRegistry);
     }
 
     @Transactional
@@ -132,8 +153,11 @@ public class TransactionService {
                     transaction.getCurrencyCode(),
                     transaction.getCompletedAt()
             ));
+            completedAttempts.increment();
+            transferAmounts.record(transaction.getAmount().doubleValue());
         } catch (RuntimeException exception) {
             transaction.fail(failureMessage(exception));
+            failedAttempts.increment();
         }
     }
 

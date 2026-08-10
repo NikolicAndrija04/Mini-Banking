@@ -66,6 +66,7 @@ class ApiGatewayApplicationTests {
         WebTestClient client = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
         client.get().uri("/actuator/health").exchange().expectStatus().isOk();
+        client.get().uri("/actuator/prometheus").exchange().expectStatus().isOk();
         client.get().uri("/api/accounts").exchange().expectStatus().isUnauthorized();
     }
 
