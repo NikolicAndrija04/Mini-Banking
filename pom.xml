@@ -24,6 +24,7 @@
         <module>infrastructure/config-server</module>
         <module>infrastructure/api-gateway</module>
         <module>services/customer-service</module>
+        <module>services/account-service</module>
     </modules>
 
     <properties>
