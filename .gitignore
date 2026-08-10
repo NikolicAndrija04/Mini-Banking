@@ -30,6 +30,8 @@ data/
 tmp/
 docs/rendered/
 docs/.cache/
+__pycache__/
+*.py[cod]
 
 # Test reports
 allure-results/

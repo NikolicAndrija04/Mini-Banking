@@ -257,4 +257,7 @@ Za test samo jednog modula:
 - Završen transakcioni audit se ne briše; neuspešan zapis može da se ponovi ili ukloni.
 - Overview fallback označava degradirane servise umesto da ruši ceo odgovor.
 
-Detaljan materijal za odbranu i kratak projektni izveštaj nalaze se u direktorijumu `docs`.
+## Dokumentacija za predaju i odbranu
+
+- [Projektni izveštaj](docs/MiniBanking_Projektni_izvestaj.docx) — sažet tehnički izveštaj od šest strana.
+- [Priprema za odbranu](docs/MiniBanking_Priprema_za_odbranu.docx) — detaljan vodič kroz tehnologije, kod, demonstraciju i pitanja profesora.
