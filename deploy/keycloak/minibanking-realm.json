@@ -1,0 +1,77 @@
+{
+  "realm": "minibanking",
+  "displayName": "MiniBanking",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "CUSTOMER",
+        "description": "Regular MiniBanking API user"
+      },
+      {
+        "name": "ADMIN",
+        "description": "MiniBanking administrator with destructive-operation access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "minibanking-cli",
+      "name": "MiniBanking CLI and Swagger demo client",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:*/*"
+      ],
+      "webOrigins": [
+        "http://localhost:*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "customer",
+      "email": "customer@minibanking.local",
+      "firstName": "Demo",
+      "lastName": "Customer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "customer123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "CUSTOMER"
+      ]
+    },
+    {
+      "username": "admin",
+      "email": "admin@minibanking.local",
+      "firstName": "Demo",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN",
+        "CUSTOMER"
+      ]
+    }
+  ]
+}

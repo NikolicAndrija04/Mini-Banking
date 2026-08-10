@@ -7,6 +7,12 @@ spring:
     name: api-gateway
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/minibanking}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/minibanking/protocol/openid-connect/certs}
   cloud:
     gateway:
       server:
@@ -65,3 +71,7 @@ info:
     name: ${spring.application.name}
     description: Load-balanced entry point for MiniBanking APIs
     version: '@project.version@'
+
+minibanking:
+  security:
+    client-id: minibanking-cli

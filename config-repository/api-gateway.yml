@@ -10,3 +10,5 @@ spring:
 minibanking:
   gateway:
     configuration-source: config-server
+  security:
+    client-id: minibanking-cli
