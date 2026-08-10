@@ -21,6 +21,7 @@
 
     <modules>
         <module>infrastructure/discovery-server</module>
+        <module>infrastructure/config-server</module>
     </modules>
 
     <properties>

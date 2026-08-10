@@ -1,0 +1,3 @@
+minibanking:
+  test:
+    source: config-server-test
