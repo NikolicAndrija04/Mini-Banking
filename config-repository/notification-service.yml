@@ -1,0 +1,3 @@
+minibanking:
+  notification:
+    delivery-mode: persistent-in-app
