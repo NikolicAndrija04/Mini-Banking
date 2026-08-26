@@ -151,7 +151,7 @@ Na dashboard-u se mogu videti registrovane instance:
 - `TRANSACTION-SERVICE`
 - `CARD-SERVICE`
 
-![Eureka Dashboard](docs/images/eureka-dashboard.png)
+![Eureka Dashboard](docs/images/eureka-dashboard.PNG)
 
 ---
 
@@ -205,7 +205,7 @@ Primer zahteva:
 
 Uspešan zahtev vraća JWT:
 
-![JWT Token](docs/images/jwt-token.png)
+![JWT Token](docs/images/jwt-token.PNG)
 
 Dobijeni token šalje se prilikom pristupa zaštićenim `/api/**` endpointima:
 
@@ -215,13 +215,13 @@ Authorization: Bearer <JWT_TOKEN>
 
 Primer uspešnog pristupa Customer Service-u preko API Gateway-a:
 
-![JWT Authorized Request](docs/images/jwt-authorized.png)
+![JWT Authorized Request](docs/images/jwt-authorized.PNG)
 
 Ukoliko token nedostaje, nije validan ili je izmenjen, Gateway odbija zahtev.
 
 Primer zahteva sa nevalidnim tokenom:
 
-![JWT Unauthorized Request](docs/images/jwt-unauthorized.png)
+![JWT Unauthorized Request](docs/images/jwt-unauthorized.PNG)
 
 Na ovaj način se autentifikacija obavlja centralizovano na API Gateway-u, pre prosleđivanja zahteva poslovnim servisima.
 
@@ -354,7 +354,7 @@ DELETE /api/transactions/{id}
 
 Primer uspešnog dobijanja transakcija povezanih sa određenim računom:
 
-![Transactions By Account](docs/images/transactions-by-account.png)
+![Transactions By Account](docs/images/transactions-by-account.PNG)
 
 ---
 
@@ -426,7 +426,7 @@ Umesto nekontrolisane greške, klijent dobija kontrolisan odgovor:
 
 Primer je testiran tako što je `account-service` ugašen, nakon čega je pokušan novi transfer:
 
-![Resilience4j Fallback](docs/images/resilience4j-fallback.png)
+![Resilience4j Fallback](docs/images/resilience4j-fallback.PNG)
 
 Ovaj test pokazuje da pad jednog mikroservisa ne dovodi do nekontrolisanog pada Transaction Service-a.
 
@@ -475,7 +475,7 @@ Controller endpointi dokumentovani su pomoću anotacija kao što su:
 
 Primer Swagger dokumentacije za Transaction Service:
 
-![Transaction Service Swagger](docs/images/transaction-swagger.png)
+![Transaction Service Swagger](docs/images/transaction-swagger.PNG)
 
 Swagger UI omogućava pregled i interaktivno testiranje REST endpointa.
 
@@ -578,7 +578,7 @@ Docker Compose podiže:
 - Transaction Service
 - Card Service
 
-![Docker Compose](docs/images/docker-compose.png)
+![Docker Compose](docs/images/docker-compose.PNG)
 
 Unutar Docker mreže servisi komuniciraju korišćenjem naziva Compose servisa.
 
