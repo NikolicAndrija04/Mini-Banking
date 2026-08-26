@@ -1,0 +1,3 @@
+### Test SA JWT-om
+GET http://localhost:8080/api/customers
+Authorization: Bearer eyJraWQiOiJwUEVEZzdaQnd0cm5xLTYzY0I3QWpZZXFlZ2xYc3YtaVVvc0x5ckZwTWMwIiwidHlwIjoiSldUIiwiYWxnIjoiSFMyNTYifQ.eyJpc3MiOiJtaW5pLWJhbmtpbmciLCJzdWIiOiJhZG1pbiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzg3MDY0NjIyLCJpYXQiOjE3ODcwNjEwMjJ9.0mABL5FBHUSyo3Bd7XwtatbhNIVU6YDq_oWeHsfyEhE

@@ -1,0 +1,88 @@
+services:
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - mini-banking-network
+
+  customer-service:
+    build:
+      context: ./customer-service
+    container_name: customer-service
+    ports:
+      - "8081:8081"
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - mini-banking-network
+
+  account-service:
+    build:
+      context: ./account-service
+    container_name: account-service
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+      - customer-service
+    networks:
+      - mini-banking-network
+
+  transaction-service:
+    build:
+      context: ./transaction-service
+    container_name: transaction-service
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+      - account-service
+    networks:
+      - mini-banking-network
+
+  card-service:
+    build:
+      context: ./card-service
+    container_name: card-service
+    ports:
+      - "8084:8084"
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+      - account-service
+      - customer-service
+    networks:
+      - mini-banking-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      JWT_SECRET: MiniBankingSuperSecretKeyThatMustBeAtLeast32CharactersLong123
+    depends_on:
+      - discovery-server
+      - customer-service
+      - account-service
+      - transaction-service
+      - card-service
+    networks:
+      - mini-banking-network
+
+networks:
+  mini-banking-network:
+    driver: bridge
